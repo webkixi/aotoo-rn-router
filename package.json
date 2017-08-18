@@ -1,0 +1,39 @@
+{
+  "name": "aotoo-rn-router",
+  "version": "1.0.0",
+  "description": "aotoo rn 路由模块",
+  "main": "./build/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webkixi/aotoo.git"
+  },
+  "dependencies": {
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-react": "^6.5.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-uglify": "^3.0.0",
+    "pump": "^1.0.2"
+  },
+  "keywords": [
+    "react",
+    "dom",
+    "aotoo",
+    "combinex",
+    "redux"
+  ],
+  "author": "天天修改newa",
+  "bugs": {
+    "url": "https://github.com/webkixi/aotoo/issues"
+  },
+  "homepage": "https://github.com/webkixi/aotoo#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
