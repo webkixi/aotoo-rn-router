@@ -18,18 +18,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // const routerData = [
-//   {title: 'xxx', path: 'xxx', content: 'bbb', id: 'root' style:{}},
-//   {title: 'xxx', path: 'xxx', content: 'bbb', parent: 'root'},
-//   {title: 'xxx', path: 'xxx', content: 'bbb', parent: 'root'},
-
-//   {title: 'xxx', path: 'xxx', content: 'bbb', parent: 'root'},
-// ]
-
-// router({
-//   data: routerData,
-//   style: {}
-// })
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _Dimensions$get = _reactNative.Dimensions.get('window'),
     width = _Dimensions$get.width,
@@ -155,7 +144,7 @@ var RouterPageView = function (_React$PureComponent) {
         if (isBack) {
           // 关闭open的页面
           var lastOpen = ctx.saxer.get().LastOpen;
-          if (index == lastOpen.select || path == lastOpen.select) {
+          if (lastOpen && (index == lastOpen.select || path == lastOpen.select)) {
             return leaveContent(children);
           }
         } else {
@@ -209,24 +198,32 @@ var RouterClass = function (_React$Component) {
     key: 'componentWillMount',
     value: function componentWillMount() {
       var that = this;
-      var timmer = void 0;
+      var router = this.saxer.get().MyRouter || {};
+      var timmer = new Date().getTime();
       this.prepaireData(this.state);
       if (_reactNative.Platform.OS == 'android') {
+        if (typeof Toast == 'undefined') {
+          var Toast = {
+            message: function message(info) {
+              console.log(info);
+            }
+          };
+        }
         _reactNative.BackHandler.addEventListener('hardwareBackPress', function () {
           var history = that.saxer.get().History;
-          if (timmer) {
+          if (history.length < 2) {
+            Toast.message('再按一次退出');
             var curTime = new Date().getTime();
-            if (curTime - timmer < 2000) {
+            if (curTime - timmer < (that.props.duration || 1500)) {
               return false;
             } else {
               timmer = curTime;
-              that.props.router.close();
               return true;
             }
           } else {
-            timmer = new Date().getTime();
+            router.close();
+            return true;
           }
-          return true;
         });
       }
     }
@@ -286,7 +283,8 @@ var RouterClass = function (_React$Component) {
     value: function getMyRealContent(id, data) {
       try {
         var content = this.getContent(id);
-        var router = this.props.router || {};
+        // const router = this.props.router||{}
+        var router = this.saxer.get().MyRouter || {};
         var ctx = {
           router: router
         };
@@ -439,7 +437,8 @@ var RouterClass = function (_React$Component) {
       return React.createElement(
         _reactNative.View,
         { style: sty },
-        curPage
+        curPage,
+        this.props.children
       );
     }
   }]);
@@ -543,19 +542,23 @@ var Actions = {
     }
     return state;
   }
+};
 
-  // function convTimestamp(time){
-  //   var arr = time.split(/[- :]/),
-  //       _date = new Date(arr[0], arr[1]-1, arr[2], arr[3], arr[4], arr[5]),
-  //       timeStr = Date.parse(_date);
-  //   return timeStr
-  // }
-
-};module.exports = function router() {
+var defaultConfig = {
+  props: {
+    data: [],
+    select: 0,
+    selectData: {},
+    router: {},
+    duration: 1200
+  }
+};
+module.exports = function router() {
   var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var sty = arguments[1];
 
-  if (!opts.props) opts.props = {};
+  opts = Aotoo.merge({}, defaultConfig, opts);
+  // if (!opts.props) opts.props = {}
   var Router = Aotoo(RouterClass, Actions);
   var extendAction = {
     "$goto": function (rot, data) {
@@ -589,8 +592,13 @@ var Actions = {
     }.bind(Router)
   };
   Router.extend(extendAction);
-  opts.props.router = extendAction;
+  Router.saxer.append({
+    'MyRouter': extendAction
+  });
+  // opts.props.router = extendAction
   Router.setConfig(opts);
   return Router;
 };
+
+// module.exports = require('aotoo-rn-router')
 //# sourceMappingURL=maps/index.js.map

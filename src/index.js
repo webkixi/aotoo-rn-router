@@ -1,16 +1,3 @@
-// const routerData = [
-//   {title: 'xxx', path: 'xxx', content: 'bbb', id: 'root' style:{}},
-//   {title: 'xxx', path: 'xxx', content: 'bbb', parent: 'root'},
-//   {title: 'xxx', path: 'xxx', content: 'bbb', parent: 'root'},
-
-//   {title: 'xxx', path: 'xxx', content: 'bbb', parent: 'root'},
-// ]
-
-// router({
-//   data: routerData,
-//   style: {}
-// })
-
 import { Animated, Button, Platform, BackHandler, StyleSheet, Text, View, Dimensions } from 'react-native'
 import * as Animatable from 'react-native-animatable'
 const {width, height} = Dimensions.get('window');
@@ -115,7 +102,7 @@ class RouterPageView extends React.PureComponent {
       if (isBack) {
         // 关闭open的页面
         const lastOpen = ctx.saxer.get().LastOpen
-        if (index == lastOpen.select || path == lastOpen.select){
+        if (lastOpen && (index == lastOpen.select || path == lastOpen.select)){
           return leaveContent(children)
         }
       }
@@ -159,24 +146,32 @@ class RouterClass extends React.Component {
 
   componentWillMount() {
     const that = this
-    let timmer
+    const router = this.saxer.get().MyRouter||{}
+    let timmer = new Date().getTime()
     this.prepaireData(this.state)
     if (Platform.OS  == 'android') {
+      if (typeof Toast == 'undefined') {
+        var Toast = {
+          message: function(info){
+            console.log(info);
+          }
+        }
+      }
       BackHandler.addEventListener('hardwareBackPress', function(){
         const history = that.saxer.get().History
-        if (timmer) {
+        if (history.length<2) {
+          Toast.message('再按一次退出')
           const curTime = new Date().getTime()
-          if (curTime - timmer < 2000) {
+          if (curTime - timmer < (that.props.duration||1500)) {
             return false
           } else {
             timmer = curTime
-            that.props.router.close()
             return true
           }
         } else {
-          timmer = new Date().getTime()
+          router.close()
+          return true
         }
-        return true
       })
     }
   }
@@ -232,7 +227,8 @@ class RouterClass extends React.Component {
   getMyRealContent(id, data){
     try {
       let   content = this.getContent(id)
-      const router = this.props.router||{}
+      // const router = this.props.router||{}
+      const router = this.saxer.get().MyRouter||{}
       const ctx = {
         router: router
       }
@@ -378,6 +374,7 @@ class RouterClass extends React.Component {
     return (
       <View style={sty}>
         {curPage}
+        {this.props.children}
       </View>
     )
   }
@@ -472,15 +469,18 @@ const Actions = {
   }
 }
 
-// function convTimestamp(time){
-//   var arr = time.split(/[- :]/),
-//       _date = new Date(arr[0], arr[1]-1, arr[2], arr[3], arr[4], arr[5]),
-//       timeStr = Date.parse(_date);
-//   return timeStr
-// }
-
+var defaultConfig = {
+  props: {
+    data: [],
+    select: 0,
+    selectData: {},
+    router: {},
+    duration: 1200
+  }
+}
 module.exports = function router(opts={}, sty){
-  if (!opts.props) opts.props = {}
+  opts = Aotoo.merge({}, defaultConfig, opts)
+  // if (!opts.props) opts.props = {}
   const Router = Aotoo(RouterClass, Actions)
   const extendAction = {
     "$goto": function(rot, data){
@@ -514,7 +514,12 @@ module.exports = function router(opts={}, sty){
     }.bind(Router),
   }
   Router.extend(extendAction)
-  opts.props.router = extendAction
+  Router.saxer.append({
+    'MyRouter': extendAction
+  })
+  // opts.props.router = extendAction
   Router.setConfig(opts)
   return Router
 }
+
+// module.exports = require('aotoo-rn-router')
