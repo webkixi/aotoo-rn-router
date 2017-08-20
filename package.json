@@ -1,6 +1,6 @@
 {
   "name": "aotoo-rn-router",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "aotoo rn 路由模块",
   "main": "./build/index.js",
   "license": "MIT",

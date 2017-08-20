@@ -2,6 +2,17 @@ import { Animated, Button, Platform, BackHandler, StyleSheet, Text, View, Dimens
 import * as Animatable from 'react-native-animatable'
 const {width, height} = Dimensions.get('window');
 
+let Toast
+if (global.Toast) {
+  Toast = global.Toast
+} else {
+  Toast = {
+    message: function(info){
+      console.log(info);
+    }
+  }
+}
+
 const styles = {
   routerContainer: {
     width: width,
@@ -150,13 +161,6 @@ class RouterClass extends React.Component {
     let timmer = new Date().getTime()
     this.prepaireData(this.state)
     if (Platform.OS  == 'android') {
-      if (typeof Toast == 'undefined') {
-        var Toast = {
-          message: function(info){
-            console.log(info);
-          }
-        }
-      }
       BackHandler.addEventListener('hardwareBackPress', function(){
         const history = that.saxer.get().History
         if (history.length<2) {
@@ -521,5 +525,3 @@ module.exports = function router(opts={}, sty){
   Router.setConfig(opts)
   return Router
 }
-
-// module.exports = require('aotoo-rn-router')

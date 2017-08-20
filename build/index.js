@@ -24,6 +24,17 @@ var _Dimensions$get = _reactNative.Dimensions.get('window'),
     width = _Dimensions$get.width,
     height = _Dimensions$get.height;
 
+var Toast = void 0;
+if (global.Toast) {
+  Toast = global.Toast;
+} else {
+  Toast = {
+    message: function message(info) {
+      console.log(info);
+    }
+  };
+}
+
 var styles = {
   routerContainer: {
     width: width,
@@ -202,13 +213,6 @@ var RouterClass = function (_React$Component) {
       var timmer = new Date().getTime();
       this.prepaireData(this.state);
       if (_reactNative.Platform.OS == 'android') {
-        if (typeof Toast == 'undefined') {
-          var Toast = {
-            message: function message(info) {
-              console.log(info);
-            }
-          };
-        }
         _reactNative.BackHandler.addEventListener('hardwareBackPress', function () {
           var history = that.saxer.get().History;
           if (history.length < 2) {
@@ -599,6 +603,4 @@ module.exports = function router() {
   Router.setConfig(opts);
   return Router;
 };
-
-// module.exports = require('aotoo-rn-router')
 //# sourceMappingURL=maps/index.js.map
