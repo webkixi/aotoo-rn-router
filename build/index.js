@@ -29,7 +29,7 @@ if (global.Toast) {
   Toast = global.Toast;
 } else {
   Toast = {
-    message: function message(info) {
+    show: function show(info) {
       console.log(info);
     }
   };
@@ -216,7 +216,7 @@ var RouterClass = function (_React$Component) {
         _reactNative.BackHandler.addEventListener('hardwareBackPress', function () {
           var history = that.saxer.get().History;
           if (history.length < 2) {
-            Toast.message('再按一次退出');
+            Toast.show('再按一次退出');
             var curTime = new Date().getTime();
             if (curTime - timmer < (that.props.duration || 1500)) {
               return false;

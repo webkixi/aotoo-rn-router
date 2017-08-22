@@ -7,7 +7,7 @@ if (global.Toast) {
   Toast = global.Toast
 } else {
   Toast = {
-    message: function(info){
+    show: function(info){
       console.log(info);
     }
   }
@@ -164,7 +164,7 @@ class RouterClass extends React.Component {
       BackHandler.addEventListener('hardwareBackPress', function(){
         const history = that.saxer.get().History
         if (history.length<2) {
-          Toast.message('再按一次退出')
+          Toast.show('再按一次退出')
           const curTime = new Date().getTime()
           if (curTime - timmer < (that.props.duration||1500)) {
             return false
