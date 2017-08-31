@@ -2,17 +2,6 @@ import { Animated, Button, Platform, BackHandler, StyleSheet, Text, View, Dimens
 import * as Animatable from 'react-native-animatable'
 const {width, height} = Dimensions.get('window');
 
-let Toast
-if (global.Toast) {
-  Toast = global.Toast
-} else {
-  Toast = {
-    show: function(info){
-      console.log(info);
-    }
-  }
-}
-
 const styles = {
   routerContainer: {
     width: width,
@@ -157,27 +146,7 @@ class RouterClass extends React.Component {
 
   componentWillMount() {
     const that = this
-    const router = this.saxer.get().MyRouter||{}
-    let timmer = new Date().getTime()
     this.prepaireData(this.state)
-    if (Platform.OS  == 'android') {
-      BackHandler.addEventListener('hardwareBackPress', function(){
-        const history = that.saxer.get().History
-        if (history.length<2) {
-          Toast.show('再按一次退出')
-          const curTime = new Date().getTime()
-          if (curTime - timmer < (that.props.duration||1500)) {
-            return false
-          } else {
-            timmer = curTime
-            return true
-          }
-        } else {
-          router.close()
-          return true
-        }
-      })
-    }
   }
 
   componentWillUpdate(nextProps, nextState){
@@ -486,6 +455,7 @@ module.exports = function router(opts={}, sty){
   opts = Aotoo.merge({}, defaultConfig, opts)
   // if (!opts.props) opts.props = {}
   const Router = Aotoo(RouterClass, Actions)
+  Router.timmer = new Date().getTime()
   const extendAction = {
     "$goto": function(rot, data){
       this.dispatch('GOTO', {
@@ -515,6 +485,27 @@ module.exports = function router(opts={}, sty){
       this.dispatch('CLOSE', {
         selectData: data
       })
+    }.bind(Router),
+
+    androidBackButton: function(toast){
+      let myToast = { show: function(info){ console.log(info); } }
+      if (toast && toast.show) { myToast = toast }
+
+      const history = this.saxer.get().History
+      const curTime = new Date().getTime()
+      if (history.length<2) {
+        myToast.show('再按一次退出')
+        if (curTime - this.timmer < 1500) {
+          return false
+        } else {
+          this.timmer = curTime
+          return true
+        }
+      } else {
+        this.timmer = curTime
+        this.close()
+        return true
+      }
     }.bind(Router),
   }
   Router.extend(extendAction)

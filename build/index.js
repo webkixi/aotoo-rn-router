@@ -24,17 +24,6 @@ var _Dimensions$get = _reactNative.Dimensions.get('window'),
     width = _Dimensions$get.width,
     height = _Dimensions$get.height;
 
-var Toast = void 0;
-if (global.Toast) {
-  Toast = global.Toast;
-} else {
-  Toast = {
-    show: function show(info) {
-      console.log(info);
-    }
-  };
-}
-
 var styles = {
   routerContainer: {
     width: width,
@@ -209,27 +198,7 @@ var RouterClass = function (_React$Component) {
     key: 'componentWillMount',
     value: function componentWillMount() {
       var that = this;
-      var router = this.saxer.get().MyRouter || {};
-      var timmer = new Date().getTime();
       this.prepaireData(this.state);
-      if (_reactNative.Platform.OS == 'android') {
-        _reactNative.BackHandler.addEventListener('hardwareBackPress', function () {
-          var history = that.saxer.get().History;
-          if (history.length < 2) {
-            Toast.show('再按一次退出');
-            var curTime = new Date().getTime();
-            if (curTime - timmer < (that.props.duration || 1500)) {
-              return false;
-            } else {
-              timmer = curTime;
-              return true;
-            }
-          } else {
-            router.close();
-            return true;
-          }
-        });
-      }
     }
   }, {
     key: 'componentWillUpdate',
@@ -564,6 +533,7 @@ module.exports = function router() {
   opts = Aotoo.merge({}, defaultConfig, opts);
   // if (!opts.props) opts.props = {}
   var Router = Aotoo(RouterClass, Actions);
+  Router.timmer = new Date().getTime();
   var extendAction = {
     "$goto": function (rot, data) {
       this.dispatch('GOTO', {
@@ -593,6 +563,31 @@ module.exports = function router() {
       this.dispatch('CLOSE', {
         selectData: data
       });
+    }.bind(Router),
+
+    androidBackButton: function (toast) {
+      var myToast = { show: function show(info) {
+          console.log(info);
+        } };
+      if (toast && toast.show) {
+        myToast = toast;
+      }
+
+      var history = this.saxer.get().History;
+      var curTime = new Date().getTime();
+      if (history.length < 2) {
+        myToast.show('再按一次退出');
+        if (curTime - this.timmer < 1500) {
+          return false;
+        } else {
+          this.timmer = curTime;
+          return true;
+        }
+      } else {
+        this.timmer = curTime;
+        this.close();
+        return true;
+      }
     }.bind(Router)
   };
   Router.extend(extendAction);
